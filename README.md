@@ -9,10 +9,9 @@ Read more: https://blogs.oracle.com/linux/post/virtioblk-using-iothread-vq-mappi
 Installation:
 
 
-cd /tmp
-
 git clone https://github.com/dominiaz/iothread-vq-mapping
 
+cd iothread-vq-mapping
 
 cp /usr/share/perl5/PVE/QemuServer/Drive.pm /usr/share/perl5/PVE/QemuServer/Drive.pm.backup
 
