@@ -1,0 +1,90 @@
+--- QemuServer.pm	2025-06-09 18:31:45.483659334 +0200
++++ QemuServer.pm	2025-06-09 18:52:38.667905922 +0200
+@@ -1310,8 +1310,59 @@
+     my $drive_id = PVE::QemuServer::Drive::get_drive_id($drive);
+     if ($drive->{interface} eq 'virtio') {
+ 	my $pciaddr = print_pci_addr("$drive_id", $bridges, $arch, $machine_type);
+-	$device = "virtio-blk-pci,drive=drive-$drive_id,id=${drive_id}${pciaddr}";
+-	$device .= ",iothread=iothread-$drive_id" if $drive->{iothread};
++#	$device = "virtio-blk-pci,drive=drive-$drive_id,id=${drive_id}${pciaddr}";
++#	$device .= ",iothread=iothread-$drive_id" if $drive->{iothread};
++
++    my @vq_map;
++    my ($use_vq_mapping, $use_iothread);
++
++    if ($drive->{iothread_vq_mapping}) {
++        $use_vq_mapping = 1;
++        @vq_map = map { { iothread => "iothread-${vmid}-$_" } } 0 .. $drive->{iothread_vq_mapping} - 1;
++    } elsif ($drive->{iothread}) {
++        $use_iothread = 1;
++    }
++
++    if ($use_iothread) {
++        $device = "virtio-blk-pci,drive=drive-$drive_id,id=${drive_id}${pciaddr},iothread=iothread-$drive_id";
++    } else {
++        $device = "virtio-blk-pci,drive=drive-$drive_id,id=${drive_id}${pciaddr}";
++    }
++
++    my @keys_order = (
++        'driver',
++        ($use_vq_mapping ? ('iothread-vq-mapping', 'drive', 'queue-size', 'config-wce') : ('drive')),
++        ($use_iothread ? 'iothread' : ()),
++        'id',
++        ($drive->{bootindex} ? 'bootindex' : ()),
++    );
++
++    my %device_hash = (
++        driver => 'virtio-blk-pci',
++        ( $use_vq_mapping ? (
++	    'iothread-vq-mapping' => \@vq_map,
++	    'queue-size'         => 1024,
++	    'config-wce'         => JSON::false,
++        ) : () ),
++        ( $use_iothread ? (
++	    iothread => "iothread-$drive_id",
++        ) : () ),
++        drive => "drive-$drive_id",
++        id    => "${drive_id}${pciaddr}",
++        ( $drive->{bootindex} ? ( bootindex => $drive->{bootindex} ) : () ),
++    );
++
++    my $json = JSON->new;
++
++    my @parts;
++    for my $k (@keys_order) {
++        push @parts, $json->encode($k) . ':' . $json->encode($device_hash{$k});
++    }
++
++    $device = '{' . join(',', @parts) . '}';
++
++    return $device;
++
+     } elsif ($drive->{interface} eq 'scsi') {
+ 
+ 	my ($maxdev, $controller, $controller_prefix) = scsihw_infos($conf, $drive);
+@@ -3911,8 +3962,23 @@
+ 
+ 	$drive->{bootindex} = $bootorder->{$ds} if $bootorder->{$ds};
+ 
+-	if ($drive->{interface} eq 'virtio'){
+-           push @$cmd, '-object', "iothread,id=iothread-$ds" if $drive->{iothread};
++#	if ($drive->{interface} eq 'virtio'){
++#           push @$cmd, '-object', "iothread,id=iothread-$ds" if $drive->{iothread};
++#	}
++
++	if ($drive->{interface} eq 'virtio') {
++
++	    if ($drive->{iothread_vq_mapping}) {
++
++		for my $i (0 .. $drive->{iothread_vq_mapping} - 1) {
++		    my $id = "iothread,id=iothread-$vmid-$i";
++		    push @$cmd, ('-object', $id) unless grep { $_ eq $id } @$cmd;
++		}
++	    } elsif ($drive->{iothread}) {
++
++		my $id = "iothread,id=iothread-$ds";
++		push @$cmd, ('-object', $id) unless grep { $_ eq $id } @$cmd;
++	    }
+ 	}
+ 
+ 	if ($drive->{interface} eq 'scsi') {
