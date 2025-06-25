@@ -18,9 +18,9 @@ cp /usr/share/perl5/PVE/QemuServer/Drive.pm /usr/share/perl5/PVE/QemuServer/Driv
 cp /usr/share/perl5/PVE/QemuServer.pm /usr/share/perl5/PVE/QemuServer.pm.backup
 
 
-patch /usr/share/perl5/PVE/QemuServer/Drive.pm < drive-iothread-vq.patch
+patch /usr/share/perl5/PVE/QemuServer/Drive.pm < drive-iothread-vq-pve8.4.patch
 
-patch /usr/share/perl5/PVE/QemuServer.pm < qemuserver-iothread-vq.patch
+patch /usr/share/perl5/PVE/QemuServer.pm < qemuserver-iothread-vq-pve8.4.patch
 
 
 systemctl restart pvedaemon
