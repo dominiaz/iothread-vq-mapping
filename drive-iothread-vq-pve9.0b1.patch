@@ -1,0 +1,35 @@
+--- Drive.pm	2025-07-20 07:55:23.324703023 +0200
++++ Drive.pm	2025-07-20 07:59:48.000527456 +0200
+@@ -264,6 +264,15 @@
+     },
+ );
+ 
++my %iothread_vq_mapping_fmt = (
++    iothread_vq_mapping => {
++	type => 'integer',
++	description => "Whether to use iothread-vq-mapping for this drive",
++	minimum => 2,
++	maximum => 16,
++	optional => 1,
++});
++
+ my %product_fmt = (
+     product => {
+         type => 'string',
+@@ -491,7 +500,7 @@
+ PVE::JSONSchema::register_standard_option("pve-qm-sata", $satadesc);
+ 
+ my $virtio_fmt = {
+-    %drivedesc_base, %iothread_fmt, %readonly_fmt,
++    %drivedesc_base, %iothread_fmt, %iothread_vq_mapping_fmt, %readonly_fmt,
+ };
+ my $virtiodesc = {
+     optional => 1,
+@@ -591,6 +600,7 @@
+ my $alldrive_fmt = {
+     %drivedesc_base,
+     %iothread_fmt,
++    %iothread_vq_mapping_fmt,
+     %model_fmt,
+     %product_fmt,
+     %queues_fmt,
