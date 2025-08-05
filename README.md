@@ -1,7 +1,7 @@
 # iothread-vq-mapping
-This patch enables advanced iothread-vq-mapping for virtio-blk devices in Proxmox VE 8.4/9.0. 
+This patch enables advanced iothread-vq-mapping for virtio-blk devices in Proxmox VE 9.0. 
 
-Iothread-vq-mapping was introduced in Qemu 9.
+Iothread-vq-mapping was introduced in Qemu 9/10.
 
 Read more: https://blogs.oracle.com/linux/post/virtioblk-using-iothread-vq-mapping
 
@@ -18,17 +18,11 @@ cp /usr/share/perl5/PVE/QemuServer/Drive.pm /usr/share/perl5/PVE/QemuServer/Driv
 cp /usr/share/perl5/PVE/QemuServer.pm /usr/share/perl5/PVE/QemuServer.pm.backup
 
 
-PVE 8.4
+PVE 9.0
 
-patch /usr/share/perl5/PVE/QemuServer/Drive.pm < drive-iothread-vq-pve8.4.patch
+patch /usr/share/perl5/PVE/QemuServer/Drive.pm < drive-iothread-vq-pve9.0.patch
 
-patch /usr/share/perl5/PVE/QemuServer.pm < qemuserver-iothread-vq-pve8.4.patch
-
-PVE 9.0b1
-
-patch /usr/share/perl5/PVE/QemuServer/Drive.pm < drive-iothread-vq-pve9.0b1.patch
-
-patch /usr/share/perl5/PVE/QemuServer.pm < qemuserver-iothread-vq-pve9.0b1.patch
+patch /usr/share/perl5/PVE/QemuServer.pm < qemuserver-iothread-vq-pve9.0.patch
 
 
 
